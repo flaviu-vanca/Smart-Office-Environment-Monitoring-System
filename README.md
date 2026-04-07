@@ -1,48 +1,144 @@
-# MQTT-Based Smart Office Environment Monitoring System
+# SmartOffice Monitor
 
-## Project Overview:
-The MQTT-Based Smart Office Environment Monitoring System is a distributed system designed to monitor various environmental parameters in an office setting, such as temperature, humidity, light status, and window status. The system consists of multiple components, including publishers for floor and room sensors, as well as a subscriber application for displaying the collected data in real-time. MQTT (Message Queuing Telemetry Transport) protocol is used for communication between the components, facilitating lightweight and efficient data exchange.
+> Real-time office environment monitoring over MQTT with a JavaFX desktop dashboard.
 
-## Components:
+[![Java](https://img.shields.io/badge/Java-17-orange?logo=openjdk)](https://openjdk.org/projects/jdk/17/)
+[![Build](https://img.shields.io/badge/Build-Maven-blue?logo=apachemaven)](https://maven.apache.org/)
+[![JavaFX](https://img.shields.io/badge/UI-JavaFX%2017-blue?logo=java)](https://openjfx.io/)
+[![MQTT](https://img.shields.io/badge/Protocol-MQTT-purple?logo=eclipse)](https://mqtt.org/)
+[![License](https://img.shields.io/badge/License-MIT-green)](https://opensource.org/licenses/MIT)
 
-### Room Sensor Publisher:
-- **Description:** Java application responsible for simulating a room sensor that measures temperature and humidity.
-- **Functionality:** Generates random temperature and humidity values and publishes them to specific MQTT topics.
-- **Dependencies:** Requires the Eclipse Paho MQTT client library.
-- **Usage:** Execute the `RoomSensorPublisher` class to start publishing simulated sensor data.
+---
 
-### Floor Publisher:
-- **Description:** Java application responsible for simulating floor-level environmental parameters such as light and window status.
-- **Functionality:** Generates random light and window status values and publishes them to specific MQTT topics.
-- **Dependencies:** Requires the Eclipse Paho MQTT client library.
-- **Usage:** Execute the `FloorPublisher` class to start publishing simulated floor sensor data.
+## Table of Contents
 
-### Smart Office App (Subscriber):
-- **Description:** JavaFX application responsible for subscribing to MQTT topics and displaying real-time environmental data.
-- **Functionality:** Connects to the MQTT broker, subscribes to relevant topics, and updates the UI with received sensor data.
-- **Dependencies:** Requires the Eclipse Paho MQTT client library and JavaFX.
-- **Usage:** Execute the `SmartOfficeApp` class to launch the subscriber application.
+- [Overview](#overview)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Running Locally](#running-locally)
+- [Project Structure](#project-structure)
+- [MQTT Topics](#mqtt-topics)
+- [Contributing](#contributing)
+- [License](#license)
 
-## Installation Steps:
-### Note:
-Ensure that Java Development Kit (JDK) is installed on your system before proceeding with the installation.
+---
 
-1. Clone the repository to your local machine.
-2. Make sure you have the Eclipse Paho MQTT client library added to your project dependencies.
-3. Compile the Java files using `javac` command or your preferred IDE.
-4. Execute each component separately by running the corresponding Java classes:
-   - `RoomSensorPublisher`
-   - `FloorPublisher`
-   - `SmartOfficeApp`
+## Overview
 
-## Support and Assistance:
-If you encounter any issues or have questions about the project, feel free to open an issue on GitHub or reach out to the project maintainer via email x22195092@student.ncirl.ie.
+SmartOffice Monitor is a lightweight Java desktop application that simulates and visualises office environmental data in real time. Two sensor publishers emit temperature, humidity, light status, and window status to an MQTT broker. A JavaFX subscriber application connects to the same broker, receives those readings, and renders them live in a clean GUI.
 
-## Project Maintenance and Contributors:
-This project is maintained and contributed to by [Flaviu Vanca](https://github.com/thaparazite). Contributions are welcome via pull requests, and all contributors are encouraged to follow the project's contribution guidelines outlined in the CONTRIBUTING.md file.
+---
 
-## License:
+## Features
+
+- **Room sensor simulation** — publishes randomised temperature (°C) and humidity (%) every second.
+- **Floor sensor simulation** — publishes randomised light (ON/OFF) and window (OPEN/CLOSED) status every second.
+- **Live JavaFX dashboard** — subscribes to all sensor topics and updates labels in real time.
+- **Connect / Disconnect controls** — start and stop the broker connection from the UI without restarting the app.
+- **Last-will messages** — each publisher registers an MQTT last-will so disconnections are announced on dedicated error topics.
+- **Graceful shutdown** — closing the window stops all publisher threads cleanly.
+
+---
+
+## Tech Stack
+
+| Technology | Version | Role |
+|---|---|---|
+| Java | 17 | Runtime & language |
+| JavaFX | 17 | Desktop UI framework |
+| Eclipse Paho MQTT | 1.2.5 | MQTT client library |
+| HiveMQ Public Broker | — | Free MQTT broker (`broker.hivemq.com:1883`) |
+| Apache Maven | 3.x | Build & dependency management |
+| JUnit | 3.8.1 | Unit testing |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- **JDK 17** or later — [Download OpenJDK](https://openjdk.org/projects/jdk/17/)
+- **Apache Maven 3.6+** — [Download Maven](https://maven.apache.org/download.cgi)
+- An internet connection (the app uses the public HiveMQ broker; no local broker setup required)
+
+### Installation
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/flaviu-vanca/MQTT-Based-Smart-Office-Environment-Monitoring-System.git
+cd MQTT-Based-Smart-Office-Environment-Monitoring-System
+
+# 2. Resolve dependencies and build
+mvn clean package
+```
+
+### Running Locally
+
+Launch the JavaFX application via the JavaFX Maven plugin:
+
+```bash
+mvn javafx:run
+```
+
+The dashboard window opens. Click **Connect** to start the publishers and begin receiving live sensor data. Click **Disconnect** to stop publishing and clear the display.
+
+---
+
+## Project Structure
+
+```
+.
+├── pom.xml
+└── src
+    ├── main
+    │   ├── java
+    │   │   ├── environment_monitor
+    │   │   │   ├── App.java               # Application entry point
+    │   │   │   └── SmartOfficeApp.java    # JavaFX UI + MQTT subscriber
+    │   │   └── publishers
+    │   │       ├── FloorPublisher.java    # Publishes light & window status
+    │   │       └── RoomSensorPublisher.java # Publishes temperature & humidity
+    │   └── resources
+    │       └── styles.css                 # JavaFX stylesheet
+    └── test
+        └── java
+            └── com/environment_monitor
+                └── AppTest.java
+```
+
+---
+
+## MQTT Topics
+
+| Topic | Publisher | Payload example |
+|---|---|---|
+| `floor/room/temperature` | `RoomSensorPublisher` | `23 °C` |
+| `floor/room/humidity` | `RoomSensorPublisher` | `55 %` |
+| `floor/light/ID` | `FloorPublisher` | `ON` / `OFF` |
+| `floor/window/status` | `FloorPublisher` | `OPEN` / `CLOSED` |
+| `floor/room/disconnect` | `RoomSensorPublisher` | Last-will on disconnect |
+| `floor/disconnect` | `FloorPublisher` | Last-will on disconnect |
+
+All messages are published to the **HiveMQ public broker** at `tcp://broker.hivemq.com:1883` with QoS 0.
+
+---
+
+## Contributing
+
+Contributions are welcome.
+
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature/your-feature`.
+3. Commit your changes: `git commit -m "feat: describe your change"`.
+4. Push to your fork and open a pull request.
+
+Please keep pull requests focused and include a clear description of what was changed and why.
+
+---
+
+## License
+
 This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
-
-## Disclaimer:
-This project is for educational and informational purposes only. It is not intended for commercial use or deployment in critical environments without proper validation and testing. Use at your own risk.
