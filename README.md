@@ -1,4 +1,4 @@
-# Smart Office Monitoring System
+# Smart Office Environment Monitoring System
 
 > Real-time office environment monitoring over MQTT with a JavaFX desktop dashboard.
 
